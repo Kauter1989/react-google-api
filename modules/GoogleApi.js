@@ -61,7 +61,7 @@ class GoogleApi extends React.Component {
         apiKey: this.props.apiKey,
         clientId: this.props.clientId,
         discoveryDocs: this.props.discoveryDocs,
-        scope: this.props.scopes.join(','),
+        scope: this.props.scopes.join(' '),
       })
     } catch (error) {
       this.setState({
