@@ -1,10 +1,11 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('react')) :
-	typeof define === 'function' && define.amd ? define(['exports', 'react'], factory) :
-	(factory((global.ReactGoogleApi = {}),global.React));
-}(this, (function (exports,React) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('react'), require('@lourd/load-script')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'react', '@lourd/load-script'], factory) :
+	(factory((global.ReactGoogleApi = {}),global.React,global.loadScript));
+}(this, (function (exports,React,loadScript) { 'use strict';
 
 React = React && React.hasOwnProperty('default') ? React['default'] : React;
+loadScript = loadScript && loadScript.hasOwnProperty('default') ? loadScript['default'] : loadScript;
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -2335,18 +2336,6 @@ function createContext(defaultValue) {
   };
 }
 
-function loadScript(url) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.onload = resolve;
-    script.onerror = reject;
-    script.src = url;
-    script.async = true;
-    script.type = 'text/javascript';
-    document.head.appendChild(script);
-  })
-}
-
 var _createContext = createContext(null);
 
 const GoogleApiProvider = _createContext.Provider;
@@ -2360,8 +2349,15 @@ class GoogleApi extends React.Component {
     var _temp;
 
     return _temp = super(...args), this.authorize = () => {
-      if (this.auth) {
-        this.auth.signIn();
+      if (this.auth && this.props.offline) {
+        if (this.props.offline) {
+          this.auth.grantOfflineAccess({
+            scope: `${this.props.scopes.join(' ')}`,
+            prompt: 'select_account'
+          }).then(({ code }) => this.setState({ code }));
+        }
+
+        if (!this.props.offline) this.auth.signIn();
       }
     }, this.signout = () => {
       if (this.auth) {
@@ -2373,7 +2369,8 @@ class GoogleApi extends React.Component {
       loading: true,
       error: null,
       authorize: this.authorize,
-      signout: this.signout
+      signout: this.signout,
+      code: null
     }, _temp;
   }
 
@@ -2396,7 +2393,9 @@ class GoogleApi extends React.Component {
         apiKey: this.props.apiKey,
         clientId: this.props.clientId,
         discoveryDocs: this.props.discoveryDocs,
-        scope: this.props.scopes.join(',')
+        scope: this.props.scopes.join(' '),
+        fetch_basic_profile: this.props.profile,
+        redirect_uri: 'http://localhost:3000'
       });
     } catch (error) {
       this.setState({
@@ -2426,6 +2425,8 @@ class GoogleApi extends React.Component {
 GoogleApi.propTypes = {
   clientId: propTypes.string.isRequired,
   apiKey: propTypes.string.isRequired,
+  offline: propTypes.bool,
+  profile: propTypes.bool,
   discoveryDocs: propTypes.arrayOf(propTypes.string).isRequired,
   scopes: propTypes.arrayOf(propTypes.string).isRequired,
   children: propTypes.oneOfType([propTypes.func, propTypes.node])

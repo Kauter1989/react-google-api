@@ -16,8 +16,15 @@ class GoogleApi extends React.Component {
     var _temp;
 
     return _temp = super(...args), this.authorize = () => {
-      if (this.auth) {
-        this.auth.signIn();
+      if (this.auth && this.props.offline) {
+        if (this.props.offline) {
+          this.auth.grantOfflineAccess({
+            scope: `${this.props.scopes.join(' ')}`,
+            prompt: 'select_account'
+          }).then(({ code }) => this.setState({ code }));
+        }
+
+        if (!this.props.offline) this.auth.signIn();
       }
     }, this.signout = () => {
       if (this.auth) {
@@ -29,7 +36,8 @@ class GoogleApi extends React.Component {
       loading: true,
       error: null,
       authorize: this.authorize,
-      signout: this.signout
+      signout: this.signout,
+      code: null
     }, _temp;
   }
 
@@ -52,7 +60,9 @@ class GoogleApi extends React.Component {
         apiKey: this.props.apiKey,
         clientId: this.props.clientId,
         discoveryDocs: this.props.discoveryDocs,
-        scope: this.props.scopes.join(',')
+        scope: this.props.scopes.join(' '),
+        fetch_basic_profile: this.props.profile,
+        redirect_uri: 'http://localhost:3000'
       });
     } catch (error) {
       this.setState({
@@ -82,6 +92,8 @@ class GoogleApi extends React.Component {
 GoogleApi.propTypes = {
   clientId: PropTypes.string.isRequired,
   apiKey: PropTypes.string.isRequired,
+  offline: PropTypes.bool,
+  profile: PropTypes.bool,
   discoveryDocs: PropTypes.arrayOf(PropTypes.string).isRequired,
   scopes: PropTypes.arrayOf(PropTypes.string).isRequired,
   children: PropTypes.oneOfType([PropTypes.func, PropTypes.node])

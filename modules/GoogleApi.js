@@ -14,14 +14,23 @@ class GoogleApi extends React.Component {
   static propTypes = {
     clientId: PropTypes.string.isRequired,
     apiKey: PropTypes.string.isRequired,
+    offline: PropTypes.bool,
+    profile: PropTypes.bool,
     discoveryDocs: PropTypes.arrayOf(PropTypes.string).isRequired,
     scopes: PropTypes.arrayOf(PropTypes.string).isRequired,
     children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
   }
 
   authorize = () => {
-    if (this.auth) {
-      this.auth.signIn()
+    if (this.auth && this.props.offline) {
+      if (this.props.offline) {
+        this.auth.grantOfflineAccess({
+          scope: `${this.props.scopes.join(' ')}`,
+          prompt: 'select_account'
+        }).then(({code }) => this.setState({ code }))
+      }
+
+      if (!this.props.offline) this.auth.signIn()
     }
   }
 
@@ -38,6 +47,7 @@ class GoogleApi extends React.Component {
     error: null,
     authorize: this.authorize,
     signout: this.signout,
+    code: null
   }
 
   componentDidMount() {
@@ -62,6 +72,8 @@ class GoogleApi extends React.Component {
         clientId: this.props.clientId,
         discoveryDocs: this.props.discoveryDocs,
         scope: this.props.scopes.join(' '),
+        fetch_basic_profile: this.props.profile,
+        redirect_uri: 'http://localhost:3000'
       })
     } catch (error) {
       this.setState({
