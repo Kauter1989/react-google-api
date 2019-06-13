@@ -1,5 +1,5 @@
 {
-  "name": "@lourd/react-google-api",
+  "name": "@not/react-google-api",
   "version": "0.2.1",
   "description": "Google's REST APIs browser client as a declarative React component",
   "repository": {
@@ -7,6 +7,9 @@
     "url": "https://github.com/lourd/react-google-api.git"
   },
   "author": "Louis DeScioli (https://descioli.design)",
+  "contributors": [
+    "Jorge Garduño <damnyorch@gmail.com>"
+  ],
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
