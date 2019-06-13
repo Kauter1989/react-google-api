@@ -38,6 +38,7 @@ class GoogleApi extends React.Component {
     error: null,
     authorize: this.authorize,
     signout: this.signout,
+    googleAuth: this.auth,
   }
 
   componentDidMount() {
@@ -75,6 +76,7 @@ class GoogleApi extends React.Component {
       client: gapi.client,
       loading: false,
       signedIn: this.auth.isSignedIn.get(),
+      googleAuth: this.auth,
     })
     this.auth.isSignedIn.listen(signedIn => this.setState({ signedIn }))
   }
